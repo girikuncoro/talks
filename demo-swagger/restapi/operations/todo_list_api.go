@@ -19,7 +19,7 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/girikuncoro/talks/demo-swagger/restapi/operations/todos"
+	"gojek.com/go-academy/restapi/operations/todos"
 )
 
 // NewTodoListAPI creates a new TodoList instance
@@ -54,7 +54,7 @@ func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
 	}
 }
 
-/*TodoListAPI From the todo list tutorial on goswagger.io */
+/*TodoListAPI From the todo list tutorial gojek */
 type TodoListAPI struct {
 	spec            *loads.Document
 	context         *middleware.Context
@@ -76,10 +76,10 @@ type TodoListAPI struct {
 	// It has a default implemention in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 
-	// JSONConsumer registers a consumer for a "application/io.goswagger.examples.todo-list.v1+json" mime type
+	// JSONConsumer registers a consumer for a "application/com.gojek.todo-list.v1+json" mime type
 	JSONConsumer runtime.Consumer
 
-	// JSONProducer registers a producer for a "application/io.goswagger.examples.todo-list.v1+json" mime type
+	// JSONProducer registers a producer for a "application/com.gojek.todo-list.v1+json" mime type
 	JSONProducer runtime.Producer
 
 	// TodosAddOneHandler sets the operation handler for the add one operation
@@ -202,8 +202,8 @@ func (o *TodoListAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consu
 	for _, mt := range mediaTypes {
 		switch mt {
 
-		case "application/io.goswagger.examples.todo-list.v1+json":
-			result["application/io.goswagger.examples.todo-list.v1+json"] = o.JSONConsumer
+		case "application/com.gojek.todo-list.v1+json":
+			result["application/com.gojek.todo-list.v1+json"] = o.JSONConsumer
 
 		}
 
@@ -222,8 +222,8 @@ func (o *TodoListAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produ
 	for _, mt := range mediaTypes {
 		switch mt {
 
-		case "application/io.goswagger.examples.todo-list.v1+json":
-			result["application/io.goswagger.examples.todo-list.v1+json"] = o.JSONProducer
+		case "application/com.gojek.todo-list.v1+json":
+			result["application/com.gojek.todo-list.v1+json"] = o.JSONProducer
 
 		}
 

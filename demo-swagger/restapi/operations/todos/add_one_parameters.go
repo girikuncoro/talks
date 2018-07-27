@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/girikuncoro/talks/demo-swagger/models"
+	models "gojek.com/go-academy/models"
 )
 
 // NewAddOneParams creates a new AddOneParams object

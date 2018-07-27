@@ -2,21 +2,20 @@
 
 /*
 Package restapi A Todo list application
-From the todo list tutorial on goswagger.io
+From the todo list tutorial gojek
 
 
     Schemes:
       http
-      https
     Host: localhost
     BasePath: /
     Version: 1.0.0
 
     Consumes:
-    - application/io.goswagger.examples.todo-list.v1+json
+    - application/com.gojek.todo-list.v1+json
 
     Produces:
-    - application/io.goswagger.examples.todo-list.v1+json
+    - application/com.gojek.todo-list.v1+json
 
 swagger:meta
 */

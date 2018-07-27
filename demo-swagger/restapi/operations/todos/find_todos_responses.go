@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/girikuncoro/talks/demo-swagger/models"
+	models "gojek.com/go-academy/models"
 )
 
 // FindTodosOKCode is the HTTP code returned for type FindTodosOK

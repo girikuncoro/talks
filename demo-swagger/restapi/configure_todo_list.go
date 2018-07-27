@@ -13,13 +13,12 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
-	"github.com/girikuncoro/talks/demo-swagger/models"
-	"github.com/girikuncoro/talks/demo-swagger/restapi/operations"
-	"github.com/girikuncoro/talks/demo-swagger/restapi/operations/todos"
+	"gojek.com/go-academy/models"
+	"gojek.com/go-academy/restapi/operations"
+	"gojek.com/go-academy/restapi/operations/todos"
 )
 
-//go:generate swagger generate server --target .. --name TodoList --spec ../swagger.yml
-
+//go:generate swagger generate server --target .. --name todo-list --spec ../swagger.yml
 var items = make(map[int64]*models.Item)
 var lastID int64
 
@@ -27,6 +26,19 @@ var itemsLock = &sync.Mutex{}
 
 func newItemID() int64 {
 	return atomic.AddInt64(&lastID, 1)
+}
+
+func allItems(since int64, limit int32) (result []*models.Item) {
+	result = make([]*models.Item, 0)
+	for id, item := range items {
+		if len(result) >= int(limit) {
+			return
+		}
+		if since == 0 || id > since {
+			result = append(result, item)
+		}
+	}
+	return
 }
 
 func addItem(item *models.Item) error {
@@ -75,19 +87,6 @@ func deleteItem(id int64) error {
 	return nil
 }
 
-func allItems(since int64, limit int32) (result []*models.Item) {
-	result = make([]*models.Item, 0)
-	for id, item := range items {
-		if len(result) >= int(limit) {
-			return
-		}
-		if since == 0 || id > since {
-			result = append(result, item)
-		}
-	}
-	return
-}
-
 func configureFlags(api *operations.TodoListAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
@@ -106,18 +105,6 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
-	api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams) middleware.Responder {
-		if err := addItem(params.Body); err != nil {
-			return todos.NewAddOneDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-		}
-		return todos.NewAddOneCreated().WithPayload(params.Body)
-	})
-	api.TodosDestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams) middleware.Responder {
-		if err := deleteItem(params.ID); err != nil {
-			return todos.NewDestroyOneDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-		}
-		return todos.NewDestroyOneNoContent()
-	})
 	api.TodosFindTodosHandler = todos.FindTodosHandlerFunc(func(params todos.FindTodosParams) middleware.Responder {
 		mergedParams := todos.NewFindTodosParams()
 		mergedParams.Since = swag.Int64(0)
@@ -129,11 +116,26 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 		}
 		return todos.NewFindTodosOK().WithPayload(allItems(*mergedParams.Since, *mergedParams.Limit))
 	})
+
+	api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams) middleware.Responder {
+		if err := addItem(params.Body); err != nil {
+			return todos.NewAddOneDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		}
+		return todos.NewAddOneCreated().WithPayload(params.Body)
+	})
+
 	api.TodosUpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams) middleware.Responder {
 		if err := updateItem(params.ID, params.Body); err != nil {
 			return todos.NewUpdateOneDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 		}
 		return todos.NewUpdateOneOK().WithPayload(params.Body)
+	})
+
+	api.TodosDestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams) middleware.Responder {
+		if err := deleteItem(params.ID); err != nil {
+			return todos.NewDestroyOneDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		}
+		return todos.NewDestroyOneNoContent()
 	})
 
 	api.ServerShutdown = func() {}

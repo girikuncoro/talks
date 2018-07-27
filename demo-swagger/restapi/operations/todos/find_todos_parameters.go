@@ -34,7 +34,7 @@ func NewFindTodosParams() FindTodosParams {
 // FindTodosParams contains all the bound params for the find todos operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters findTodos
+// swagger:parameters find_todos
 type FindTodosParams struct {
 
 	// HTTP Request Object

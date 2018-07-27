@@ -19,18 +19,17 @@ var (
 func init() {
 	SwaggerJSON = json.RawMessage([]byte(`{
   "consumes": [
-    "application/io.goswagger.examples.todo-list.v1+json"
+    "application/com.gojek.todo-list.v1+json"
   ],
   "produces": [
-    "application/io.goswagger.examples.todo-list.v1+json"
+    "application/com.gojek.todo-list.v1+json"
   ],
   "schemes": [
-    "http",
-    "https"
+    "http"
   ],
   "swagger": "2.0",
   "info": {
-    "description": "From the todo list tutorial on goswagger.io",
+    "description": "From the todo list tutorial gojek",
     "title": "A Todo list application",
     "version": "1.0.0"
   },
@@ -40,7 +39,7 @@ func init() {
         "tags": [
           "todos"
         ],
-        "operationId": "findTodos",
+        "operationId": "find_todos",
         "parameters": [
           {
             "type": "integer",
@@ -139,6 +138,15 @@ func init() {
           "todos"
         ],
         "operationId": "destroyOne",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "204": {
             "description": "Deleted"
@@ -202,18 +210,17 @@ func init() {
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
   "consumes": [
-    "application/io.goswagger.examples.todo-list.v1+json"
+    "application/com.gojek.todo-list.v1+json"
   ],
   "produces": [
-    "application/io.goswagger.examples.todo-list.v1+json"
+    "application/com.gojek.todo-list.v1+json"
   ],
   "schemes": [
-    "http",
-    "https"
+    "http"
   ],
   "swagger": "2.0",
   "info": {
-    "description": "From the todo list tutorial on goswagger.io",
+    "description": "From the todo list tutorial gojek",
     "title": "A Todo list application",
     "version": "1.0.0"
   },
@@ -223,7 +230,7 @@ func init() {
         "tags": [
           "todos"
         ],
-        "operationId": "findTodos",
+        "operationId": "find_todos",
         "parameters": [
           {
             "type": "integer",
@@ -322,6 +329,15 @@ func init() {
           "todos"
         ],
         "operationId": "destroyOne",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "204": {
             "description": "Deleted"
