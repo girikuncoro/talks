@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+// The GoPoints service definition
+service GoPoints {
+    // Get random point
+    rpc GetPoint(PointRequest) returns(PointReply) {}
+}
+
+// The request message containing user's name
+message PointRequest {
+  string name = 1;
+}
+
+// The response message containing random point
+message PointReply {
+  string point = 1;
+}
