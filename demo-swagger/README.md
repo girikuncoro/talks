@@ -1,8 +1,8 @@
-# Lab 2: Generate REST API Server with Swagger
+# Lab 2.1: Generate REST API Server with Swagger
 
 This example walks you through a hypothetical project, building a todo list. Originally stolen from https://goswagger.io with various modifications to make it easier to follow.
 
-It uses a todo list because this is well-understood application, so you can focus on the go-swagger pieces. In this example we build a server and a client.
+It uses a todo list because this is well-understood application, so you can focus on the go-swagger pieces. In this lab we build a server and a client.
 
 
 
@@ -969,7 +969,7 @@ $ todo-list-server --port 9000
 2018/07/27 19:12:14 Serving todo list at http://127.0.0.1:9000
 ```
 
-If you are facing problem or not sure whether your implemention is correct, you can compare `configure_todo_list.go` and `swagger.yml` from our [Github](https://github.com/girikuncoro/talks/blob/master/demo-swagger/swagger.yml).
+If you are facing problem or not sure whether your implemention is correct, you can compare `configure_todo_list.go` and `swagger.yml` from our [Github](https://github.com/girikuncoro/talks/blob/master/demo-swagger/swagger.yml) for this lab.
 
 
 
@@ -1110,7 +1110,7 @@ Content-Length: 78
 
 
 
-### Challenges
+### Optional Challenge
 
 * Open https://editor.swagger.io, and copy paste your `swagger.yml` there. Play around with the UI.
 * From inside the UI, generate client with language of your choice (can be ruby, python, or anything else). Implement a simple application by using the generated client library/sdk to interact with our Golang generated Todo List server.
