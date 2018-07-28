@@ -1107,3 +1107,11 @@ Content-Length: 78
 
 [{"description":"message 18912","id":2},{"description":"topup gopay","id":3}]
 ```
+
+
+
+### Challenges
+
+* Open https://editor.swagger.io, and copy paste your `swagger.yml` there. Play around with the UI.
+* From inside the UI, generate client with language of your choice (can be ruby, python, or anything else). Implement a simple application by using the generated client library/sdk to interact with our Golang generated Todo List server.
+
