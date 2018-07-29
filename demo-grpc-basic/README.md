@@ -406,4 +406,6 @@ $ go run client/client.go
 
 ## Optional Challenge
 
-* Create one more client with Ruby based gRPC. The client should be able to get similar output to our Golang client. Follow the official [Ruby tutorial](https://grpc.io/docs/quickstart/ruby.html) for reference.
+* Add one more method to `gopoints.proto` and regenerate the code.
+* Create one more client with Ruby based gRPC. The client should be able to get similar output to our Golang client and the response of the other method you just created. Follow the official [Ruby tutorial](https://grpc.io/docs/quickstart/ruby.html) for reference.
+
