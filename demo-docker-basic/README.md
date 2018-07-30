@@ -391,7 +391,7 @@ Let’s have a look at the Dockerfile we’ll be using, which builds a simple we
 
 
 
-## Task 2: Modify a running website
+## Task 3: Modify a running website
 
 When you’re actively working on an application it is inconvenient to have to stop the container, rebuild the image, and run a new version every time you make a change to your source code.
 
