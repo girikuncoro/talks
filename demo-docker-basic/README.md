@@ -1,4 +1,4 @@
-# Lab 4: Container Packaging
+# Lab 4.1: Container Packaging with Docker
 
 This lab is originally taken from Docker community training for beginner. In this lab, we will look at some basic Docker commands and a simple build-ship-run workflow. We’ll start by running some simple containers, then we’ll use a Dockerfile to build a custom app. Finally, we’ll look at how to use bind mounts to modify a running container as you might if you were actively developing using Docker.
 
@@ -266,3 +266,352 @@ Background containers are how you’ll run most applications. Here’s a simple 
     exit
    ```
 
+
+
+## Task 2: Package and run a custom app using Docker
+
+In this step you’ll learn how to package your own apps as Docker images using a [Dockerfile](https://docs.docker.com/engine/reference/builder/).
+
+The Dockerfile syntax is straightforward. In this task, we’re going to create a simple NGINX website from a Dockerfile.
+
+### Build a simple website image
+
+Let’s have a look at the Dockerfile we’ll be using, which builds a simple website that allows you to send a tweet.
+
+1. Make sure you’re in the `linux_tweet_app` directory.
+
+   ```
+    cd ~/linux_tweet_app
+   ```
+
+2. Display the contents of the Dockerfile.
+
+   ```
+   $ cat Dockerfile
+   ```
+
+   ```dockerfile
+   FROM nginx:latest
+   
+   COPY index.html /usr/share/nginx/html
+   COPY linux.png /usr/share/nginx/html
+   
+   EXPOSE 80 443     
+   
+   CMD ["nginx", "-g", "daemon off;"]
+   ```
+
+   Let’s see what each of these lines in the Dockerfile do.
+
+   - [FROM](https://docs.docker.com/engine/reference/builder/#from) specifies the base image to use as the starting point for this new image you’re creating. For this example we’re starting from `nginx:latest`.
+   - [COPY](https://docs.docker.com/engine/reference/builder/#copy) copies files from the Docker host into the image, at a known location. In this example, `COPY` is used to copy two files into the image: `index.html`. and a graphic that will be used on our webpage.
+   - [EXPOSE](https://docs.docker.com/engine/reference/builder/#expose) documents which ports the application uses.
+   - [CMD](https://docs.docker.com/engine/reference/builder/#cmd) specifies what command to run when a container is started from the image. Notice that we can specify the command, as well as run-time arguments.
+
+3. In order to make the following commands more copy/paste friendly, export an environment variable containing your DockerID (if you don’t have a DockerID you can get one for free via [Docker Cloud](https://cloud.docker.com/)).
+
+   You will have to manually type this command as it requires your unique DockerID.
+
+   ```
+   $ export DOCKERID=<your docker id>
+   ```
+
+4. Echo the value of the variable back to the terminal to ensure it was stored correctly.
+
+   ```
+   $ echo $DOCKERID
+   ```
+
+5. Use the `docker image build` command to create a new Docker image using the instructions in the Dockerfile.
+
+   - `--tag` allows us to give the image a custom name. In this case it’s comprised of our DockerID, the application name, and a version. Having the Docker ID attached to the name will allow us to store it on Docker Hub in a later step
+   - `.` tells Docker to use the current directory as the build context
+
+   Be sure to include period (`.`) at the end of the command.
+
+   ```
+   $ docker image build --tag $DOCKERID/linux_tweet_app:1.0 .
+   ```
+
+   The output below shows the Docker daemon executing each line in the Dockerfile
+
+   ```
+    Sending build context to Docker daemon  32.77kB
+    Step 1/5 : FROM nginx:latest
+    latest: Pulling from library/nginx
+    afeb2bfd31c0: Pull complete
+    7ff5d10493db: Pull complete
+    d2562f1ae1d0: Pull complete
+    Digest: sha256:af32e714a9cc3157157374e68c818b05ebe9e0737aac06b55a09da374209a8f9
+    Status: Downloaded newer image for nginx:latest
+    ---> da5939581ac8
+    Step 2/5 : COPY index.html /usr/share/nginx/html
+    ---> eba2eec2bea9
+    Step 3/5 : COPY linux.png /usr/share/nginx/html
+    ---> 4d080f499b53
+    Step 4/5 : EXPOSE 80 443
+    ---> Running in 47232cb5699f
+    ---> 74c968a9165f
+    Removing intermediate container 47232cb5699f
+    Step 5/5 : CMD nginx -g daemon off;
+    ---> Running in 4623761274ac
+    ---> 12045a0df899
+    Removing intermediate container 4623761274ac
+    Successfully built 12045a0df899
+    Successfully tagged <your docker ID>/linux_tweet_app:latest
+   ```
+
+6. Use the `docker container run` command to start a new container from the image you created.
+
+   As this container will be running an NGINX web server, we’ll use the `--publish` flag to publish port 80 inside the container onto port 80 on the host. This will allow traffic coming in to the Docker host on port 80 to be directed to port 80 in the container. The format of the `--publish` flag is `host_port`:`container_port`.
+
+   ```
+   $ docker container run \
+       --detach \
+       --publish 80:80 \
+       --name linux_tweet_app \
+       $DOCKERID/linux_tweet_app:1.0
+   ```
+
+   Any external traffic coming into the server on port 80 will now be directed into the container on port 80.
+
+   In a later step you will see how to map traffic from two different ports - this is necessary when two containers use the same port to communicate since you can only expose the port once on the host.
+
+7. Access website from your browser, navigate to http://localhost
+
+8. Once you’ve accessed your website, shut it down and remove it.
+
+   ```
+   $ docker container rm --force linux_tweet_app
+   ```
+
+   > **Note:** We used the `--force` parameter to remove the running container without shutting it down. This will ungracefully shutdown the container and permanently remove it from the Docker host.
+   >
+   > In a production environment you may want to use `docker container stop` to gracefully stop the container and leave it on the host. You can then use `docker container rm` to permanently remove it.
+
+
+
+## Task 2: Modify a running website
+
+When you’re actively working on an application it is inconvenient to have to stop the container, rebuild the image, and run a new version every time you make a change to your source code.
+
+One way to streamline this process is to mount the source code directory on the local machine into the running container. This will allow any changes made to the files on the host to be immediately reflected in the container.
+
+We do this using something called a [bind mount](https://docs.docker.com/engine/admin/volumes/bind-mounts/).
+
+When you use a bind mount, a file or directory on the host machine is mounted into a container running on the same host.
+
+
+
+### Start our web app with a bind mount
+
+1. Let’s start the web app and mount the current directory into the container.
+
+   In this example we’ll use the `--mount` flag to mount the current directory on the host into `/usr/share/nginx/html`inside the container.
+
+   Be sure to run this command from within the `linux_tweet_app` directory on your Docker host.
+
+   ```
+   $ docker container run \
+       --detach \
+       --publish 80:80 \
+       --name linux_tweet_app \
+       --mount type=bind,source="$(pwd)",target=/usr/share/nginx/html \
+       $DOCKERID/linux_tweet_app:1.0
+   ```
+
+   > Remember from the Dockerfile, `usr/share/nginx/html` is where the html files are stored for the web app.
+
+2. Website should be running in http://localhost
+
+
+
+### Modify the running website
+
+Bind mounts mean that any changes made to the local file system are immediately reflected in the running container.
+
+1. Copy a new `index.html` into the container.
+
+   The Git repo that you pulled earlier contains several different versions of an index.html file. You can manually run an `ls`command from within the `~/linux_tweet_app` directory to see a list of them. In this step we’ll replace `index.html` with `index-new.html`.
+
+   ```
+   $ cp index-new.html index.html
+   ```
+
+2. Go to the running [website](http://localhost) and **refresh the page**. Notice that the site has changed.
+
+   > If you are comfortable with `vim` you can use it to load the local `index.html` file and make additional changes. Those too would be reflected when you reload the webpage. If you are really adventurous, why not try using `exec` to access the running container and modify the files stored there.
+
+Even though we’ve modified the `index.html` local filesystem and seen it reflected in the running container, we’ve not actually changed the Docker image that the container was started from.
+
+To show this, stop the current container and re-run the `1.0` image without a bind mount.
+
+1. Stop and remove the currently running container.
+
+   ```
+   $ docker rm --force linux_tweet_app
+   ```
+
+2. Rerun the current version without a bind mount.
+
+   ```
+   $ docker container run \
+       --detach \
+       --publish 80:80 \
+       --name linux_tweet_app \
+       $DOCKERID/linux_tweet_app:1.0
+   ```
+
+3. Notice the [website](https://training.play-with-docker.com/) is back to the original version.
+
+4. Stop and remove the current container
+
+   ```
+   $ docker rm --force linux_tweet_app
+   ```
+
+
+
+### Update the image
+
+To persist the changes you made to the `index.html` file into the image, you need to build a new version of the image.
+
+1. Build a new image and tag it as `2.0`
+
+   Remember that you previously modified the `index.html` file on the Docker hosts local filesystem. This means that running another `docker image build` command will build a new image with the updated `index.html`
+
+   Be sure to include the period (`.`) at the end of the command.
+
+   ```
+   $ docker image build --tag $DOCKERID/linux_tweet_app:2.0 .
+   ```
+
+   Notice how fast that built! This is because Docker only modified the portion of the image that changed vs. rebuilding the whole image.
+
+2. Let’s look at the images on the system.
+
+   ```
+   $ docker image ls
+   ```
+
+   You now have both versions of the web app on your host.
+
+   ```
+    REPOSITORY                     TAG                 IMAGE ID            CREATED             SIZE
+    <docker id>/linux_tweet_app    2.0                 01612e05312b        16 seconds ago      108MB
+    <docker id>/linux_tweet_app    1.0                 bb32b5783cd3        4 minutes ago       108MB
+    mysql                          latest              b4e78b89bcf3        2 weeks ago         412MB
+    ubuntu                         latest              2d696327ab2e        2 weeks ago         122MB
+    nginx                          latest              da5939581ac8        3 weeks ago         108MB
+    alpine                         latest              76da55c8019d        3 weeks ago         3.97MB
+   ```
+
+ 
+
+### Test the new version
+
+1. Run a new container from the new version of the image.
+
+   ```
+   $ docker container run \
+       --detach \
+       --publish 80:80 \
+       --name linux_tweet_app \
+       $DOCKERID/linux_tweet_app:2.0
+   ```
+
+2. Check the new version of the website, reload http://localhost
+
+   We can run both versions side by side. The only thing we need to be aware of is that we cannot have two containers using port 80 on the same host.
+
+   As we’re already using port 80 for the container running from the `2.0` version of the image, we will start a new container and publish it on port 8080. Additionally, we need to give our container a unique name (`old_linux_tweet_app`)
+
+3. Run another new container, this time from the old version of the image.
+
+   Notice that this command maps the new container to port 8080 on the host. This is because two containers cannot map to the same port on a single Docker host.
+
+   ```
+   $ docker container run \
+       --detach \
+       --publish 8080:80 \
+       --name old_linux_tweet_app \
+       $DOCKERID/linux_tweet_app:1.0
+   ```
+
+4. View the old version of in http://localhost:8080
+
+
+
+### Push your images to Docker Hub
+
+1. List the images on your Docker host.
+
+   ```
+   $ docker image ls -f reference="$DOCKERID/*"
+   ```
+
+   You will see that you now have two `linux_tweet_app` images - one tagged as `1.0` and the other as `2.0`.
+
+   ```
+    REPOSITORY                     TAG                 IMAGE ID            CREATED             SIZE
+    <docker id>/linux_tweet_app    2.0                 01612e05312b        3 minutes ago       108MB
+    <docker id>/linux_tweet_app    1.0                 bb32b5783cd3        7 minutes ago       108MB
+   ```
+
+   These images are only stored in your Docker hosts local repository. Your Docker host will be deleted after the workshop. In this step we’ll push the images to a public repository so you can run them from any Linux machine with Docker.
+
+   Distribution is built into the Docker platform. You can build images locally and push them to a public or private [registry](https://docs.docker.com/registry/), making them available to other users. Anyone with access can pull that image and run a container from it. The behavior of the app in the container will be the same for everyone, because the image contains the fully-configured app - the only requirements to run it are Linux and Docker.
+
+   [Docker Hub](https://hub.docker.com/) is the default public registry for Docker images.
+
+2. Before you can push your images, you will need to log into Docker Hub.
+
+   ```
+   $ docker login
+   ```
+
+   You will need to supply your Docker ID credentials when prompted.
+
+   ```
+    Username: <your docker id>
+    Password: <your docker id password>
+    Login Succeeded
+   ```
+
+3. Push version `1.0` of your web app using `docker image push`.
+
+   ```
+   $ docker image push $DOCKERID/linux_tweet_app:1.0
+   ```
+
+   You’ll see the progress as the image is pushed up to Docker Hub.
+
+   ```
+    The push refers to a repository [docker.io/<your docker id>/linux_tweet_app]
+    910e84bcef7a: Pushed
+    1dee161c8ba4: Pushed
+    110566462efa: Pushed
+    305e2b6ef454: Pushed
+    24e065a5f328: Pushed
+    1.0: digest: sha256:51e937ec18c7757879722f15fa1044cbfbf2f6b7eaeeb578c7c352baba9aa6dc size: 1363
+   ```
+
+4. Now push version `2.0`.
+
+   ```
+   $ docker image push $DOCKERID/linux_tweet_app:2.0
+   ```
+
+   Notice that several lines of the output say `Layer already exists`. This is because Docker will leverage read-only layers that are the same as any previously uploaded image layers.
+
+   ```
+    The push refers to a repository [docker.io/<your docker id>/linux_tweet_app]
+    0b171f8fbe22: Pushed
+    70d38c767c00: Pushed
+    110566462efa: Layer already exists
+    305e2b6ef454: Layer already exists
+    24e065a5f328: Layer already exists
+    2.0: digest: sha256:7c51f77f90b81e5a598a13f129c95543172bae8f5850537225eae0c78e4f3add size: 1363
+   ```
+
+You can browse to `https://hub.docker.com/r/<your docker id>/` and see your newly-pushed Docker images. These are public repositories, so anyone can pull the image - you don’t even need a Docker ID to pull public images. Docker Hub also supports private repositories.
