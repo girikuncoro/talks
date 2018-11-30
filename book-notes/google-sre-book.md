@@ -59,3 +59,43 @@
 
 *Multiple interesting case studies and explanations skipped in notes.*
 
+## Chapter 8: Release engineering
+
+A specific job function at Google
+
+#### Release engineer role
+* Release engineers work with SWEs and SREs to define how software is released
+    * Allows dev teams to focus on dev work
+* Define best practices
+    * Compiler flags, formats for build ID tags, etc.
+* Releases automated
+* Models vary between teams
+    * Could be “push on green” and deploy every build
+    * Could be hourly builds and deploys
+* Hermetic builds
+    * Building same rev number should always give identical results
+    * Self-contained -- this includes versioning everything down the compiler used
+    * Can cherry-pick fixes against an old rev to fix production software
+* Virtually all changes require code review
+* Branching
+    * All code in main branch
+    * Releases are branched off
+    * Fixes can go from master to branch
+    * Branches never merged back
+* Testing
+    * CI
+    * Release process creates an audit trail that runs tests and shows that tests passed
+    
+#### Config management
+* Although look simple, can cause instability
+* Many possible schemes (all involve storing config in source control and having strict config review)
+* Use mainline for config -- config maintained at head and applied immediately
+    * Originally used for Borg (and pre-Borg systems)
+    * Binary releases and config changes decoupled!
+* Include config files and binaries in same package
+    * Simple
+    * Tightly couples binary and config -- ok for projects with few config files or where few configs change
+* Package config into “configuration packages”
+    * Same hermetic principle as for code
+* Release engineering shouldn’t be an afterthought!
+* Budget resources at beginning of dev cycle
