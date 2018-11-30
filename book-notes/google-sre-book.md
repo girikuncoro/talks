@@ -26,7 +26,7 @@
     * Errors
     * Saturation
 
-*Interesting examples from Bigtable and Gmail from chapter not transcribed*
+*Interesting examples from Bigtable and Gmail are skipped in notes*
 
 #### Monitoring/alerting philosophy endorsed by Google SRE team
 * When creating alerting/monitoring:
@@ -46,3 +46,16 @@
     * There’s often a tension between long-run and short-run availability (hack vs proper fix)
     * Can sometimes fix unreliable systems through heroic effort, but that’s a burnout risk and also a failure risk
     * Taking a controlled hit in short-term reliability is usually the better trade
+
+## Chapter 7: Evolution of automation at Google
+* “Automation is a force multiplier, not a panacea”
+* Value of automation
+    * Consistency
+    * Extensibility
+    * Centralize mistakes
+    * MTTR
+    * Faster actions
+    * Time savings
+
+*Multiple interesting case studies and explanations skipped in notes.*
+
