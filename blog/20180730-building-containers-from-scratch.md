@@ -30,6 +30,7 @@ The mechanism behind building this tarball itself is a huge topic which will not
 
 Let’s grab a Debian machine and execute DNF to build our container filesystem. The DNF command we execute below is telling the system to build minimal Debian system into rootfs subdirectory, with additional packages installation, i.e. python3, iproute, iputils, and others.
 
+```
 $ mkdir rootfs
 $ sudo dnf -y \
   --installroot=$PWD/rootfs \
